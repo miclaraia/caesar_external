@@ -83,6 +83,7 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
             'panoptes_client',
+            'click',
     ],
 
     # List additional groups of dependencies here (e.g. development
