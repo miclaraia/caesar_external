@@ -2,6 +2,8 @@
 import panoptes_client as pan
 from caesar_external.data import Config
 
+import logging
+logger = logging.getLogger(__name__)
 
 """
 Utils to interact with caesar...
@@ -10,38 +12,36 @@ Utils to interact with caesar...
 
 class Client:
 
-    _client = None
+    _instance = None
 
     def __init__(self):
         self.pan = pan.Panoptes(login='interactive')
 
     @classmethod
-    def client(cls):
-        if cls._client is None:
-            cls._client = cls()
-        return cls._client
+    def instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
 
     @classmethod
-    def get_classifications(cls, last_id):
-        c = pan.Classification.where(scope='project', last_id=last_id)
-        cl = c.raw.copy()
-        cl['user'] = c.links.user.id
-        cl['subject'] = c.links.subject.id
-        cl['project'] = c.links.project.id
-        cl['workflow'] = c.links.workflow.id
-
-        return cl
+    def extract(cls, project, last_id):
+        print(last_id)
+        cls.instance()
+        return pan.Classification.where(
+            scope='project',
+            last_id=last_id,
+            project_id=project)
 
     @classmethod
-    def respond(cls, subject, data):
+    def reduce(cls, subject, data):
         """
         PUT subject score to Caesar
         """
         config = Config._config
-        pan = cls._client.pan
+        pan = cls.instance().pan
 
-        endpoint = config.caesar_address()
-        path = 'workflow/%d/reducers/external/reductions' % config.workflow
+        endpoint = config.caesar_endpoint()
+        path = config.workflow_path()
 
         body = {
             'reduction': {

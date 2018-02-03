@@ -16,23 +16,51 @@ class Config:
         self.project = project
         self.workflow = workflow
         self.last_id = last_id
+        self.caesar_name = kwargs.get('caesar_name', 'ext')
 
-        self._config = self
+        self.__class__._config = self
 
-    def caesar_address(self):
-        return 'https://caesar.zooniverse.org:443' % self.workflow
+    @staticmethod
+    def _keys():
+        return ['name', 'project', 'workflow', 'last_id', 'caesar_name']
+
+    @classmethod
+    def instance(cls):
+        return cls._config
+
+    @staticmethod
+    def caesar_endpoint():
+        return 'https://caesar.zooniverse.org:443'
+
+    def workflow_path(self):
+        return 'workflow/%d/reducers/external/reductions' % self.workflow
 
     def save(self):
-        with open(path(self.name), 'w') as fp:
-            json.dump(self.__dict__, fp)
+        fname = '%s.json' % self.name
+        with open(path(fname), 'w') as fp:
+
+            json.dump(self.dump(), fp)
 
     @classmethod
     def load(cls, name):
-        with open(path(name), 'r') as fp:
+        fname = '%s.json' % name
+        with open(path(fname), 'r') as fp:
             data = json.load(fp)
 
+        print(data)
+
         return cls(**data)
-        
+
+    def dump(self):
+        data = self.__dict__
+        data = {k: data[k] for k in self._keys()}
+        return data
+
+    def __str__(self):
+        return str(self.dump())
+
+    def __repr__(self):
+        return str(self)
 
 
 def dir():
