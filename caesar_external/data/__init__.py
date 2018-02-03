@@ -20,7 +20,7 @@ class Config:
         self._config = self
 
     def caesar_address(self):
-        return 'https://caesar.zooniverse.org:443/workflows/%d' % self.workflow
+        return 'https://caesar.zooniverse.org:443' % self.workflow
 
     def save(self):
         with open(path(self.name), 'w') as fp:

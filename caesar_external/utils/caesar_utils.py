@@ -38,10 +38,10 @@ class Client:
         PUT subject score to Caesar
         """
         config = Config._config
+        pan = cls._client.pan
 
-        address = config.caesar_address()
-        address = '/'.join([address, 'reducers/external/reductions'])
-
+        endpoint = config.caesar_address()
+        path = 'workflow/%d/reducers/external/reductions' % config.workflow
 
         body = {
             'reduction': {
@@ -50,10 +50,7 @@ class Client:
             }
         }
 
-        headers = cls.headers()
-        logger.debug('headers %s', str(headers))
-
-        r = requests.put(address, headers=headers, json=body)
+        r = pan.put(endpoint=endpoint, path=path, json=body)
         logger.debug('done')
 
         return r
