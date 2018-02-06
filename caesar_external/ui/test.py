@@ -17,7 +17,7 @@ def test():
 @click.argument('name')
 @click.argument('project', type=int)
 @click.argument('workflow', type=int)
-@click.argument('last_id', type=int)
+@click.option('--last_id', type=int)
 @click.option('--caesar_name')
 def new(name, project, workflow, last_id, caesar_name):
     config = Config(**{

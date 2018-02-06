@@ -27,10 +27,14 @@ class Client:
     def extract(cls, project, last_id):
         print(last_id)
         cls.instance()
-        return pan.Classification.where(
-            scope='project',
-            last_id=last_id,
-            project_id=project)
+        kwargs = {
+            'scope': 'project',
+            'project_id': project,
+        }
+        if last_id:
+            kwargs.update({'last_id': last_id})
+        print(kwargs)
+        return pan.Classification.where(**kwargs)
 
     @classmethod
     def reduce(cls, subject, data):
