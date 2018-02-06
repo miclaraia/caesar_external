@@ -1,6 +1,6 @@
 
 from caesar_external.ui import ui
-import caesar_external.ui.test
+import caesar_external.ui.config
 
 
 def run():

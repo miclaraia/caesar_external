@@ -8,12 +8,16 @@ from caesar_external.extractor import Extractor
 from caesar_external.reducer import Reducer
 
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+
 @ui.cli.group()
-def test():
+def config():
     pass
 
 
-@test.command()
+@config.command()
 @click.argument('name')
 @click.argument('project', type=int)
 @click.argument('workflow', type=int)
@@ -31,7 +35,7 @@ def new(name, project, workflow, last_id, caesar_name):
     config.save()
 
 
-@test.command()
+@config.command()
 @click.argument('name')
 def load(name):
     config = Config.load(name)
