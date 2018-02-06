@@ -1,6 +1,8 @@
+README
+======
 
-
-##Configuring a Workflow
+Configuring a Workflow
+----------------------
 
 `caesar config new ${NAME} ${PROJECT} ${WORKFLOW}`
 Can also add parameters:
