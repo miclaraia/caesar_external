@@ -33,7 +33,8 @@ class Config:
         return 'https://caesar.zooniverse.org:443'
 
     def workflow_path(self):
-        return 'workflow/%d/reducers/external/reductions' % self.workflow
+        return 'workflows/%d/reducers/%s/reductions' % \
+            (self.workflow, self.caesar_name)
 
     def save(self):
         fname = '%s.json' % self.name
