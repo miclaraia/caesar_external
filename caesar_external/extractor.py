@@ -7,6 +7,9 @@ Get classifications from Panoptes
 from caesar_external.utils.caesar_utils import Client
 from caesar_external.data import Config
 import panoptes_client as pan
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Extractor:
@@ -19,6 +22,7 @@ class Extractor:
 
     @classmethod
     def get_classifications(cls, last_id):
+        logger.debug('Getting classifications')
         project = Config.instance().project
         for c in Client.extract(project, last_id):
             cl = {
