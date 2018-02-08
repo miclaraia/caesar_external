@@ -55,7 +55,6 @@ class Client:
         }
 
         r = pan.put(endpoint=endpoint, path=path, json=body)
-        logger.debug('done')
 
         return r
         
