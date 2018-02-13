@@ -16,6 +16,7 @@ class Config:
         self.project = project
         self.workflow = workflow
         self.last_id = last_id
+
         self.caesar_name = kwargs.get('caesar_name', 'ext')
 
         self.__class__._config = self

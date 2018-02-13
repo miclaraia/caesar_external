@@ -24,14 +24,16 @@ def config():
 @click.option('--last_id', type=int)
 @click.option('--caesar_name')
 def new(name, project, workflow, last_id, caesar_name):
-    config = Config(**{
+    kwargs = {
         'name': name,
         'project': project,
         'workflow': workflow,
         'last_id': last_id,
-        'caesar_name': caesar_name,
-    })
+    }
+    if caesar_name is not None:
+        kwargs.update({'caesar_name': caesar_name})
 
+    config = Config(**kwargs)
     config.save()
 
 
