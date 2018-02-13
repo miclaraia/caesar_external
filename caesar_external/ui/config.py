@@ -40,4 +40,4 @@ def new(name, project, workflow, last_id, caesar_name):
 def load(name):
     config = Config.load(name)
 
-    code.interact(local={**locals(), **globals()})
+    code.interact(local={**globals(), **locals()})
