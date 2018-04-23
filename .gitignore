@@ -95,7 +95,7 @@ mnt/
 .ropeproject
 
 # data
-data/
+# data/
 *.mat
 *.jpeg
 *.png

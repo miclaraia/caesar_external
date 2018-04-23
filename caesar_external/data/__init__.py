@@ -18,12 +18,13 @@ class Config:
         self.last_id = last_id
 
         self.caesar_name = kwargs.get('caesar_name', 'ext')
+        self.sqs_queue = kwargs.get('sqs_queue', None)
 
         self.__class__._config = self
 
     @staticmethod
     def _keys():
-        return ['name', 'project', 'workflow', 'last_id', 'caesar_name']
+        return ['name', 'project', 'workflow', 'last_id', 'caesar_name', 'sqs_queue']
 
     @classmethod
     def instance(cls):
