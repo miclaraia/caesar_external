@@ -4,6 +4,7 @@ from caesar_external.data import Config
 
 import hashlib
 import json
+import boto3
 
 import logging
 logger = logging.getLogger(__name__)
@@ -65,15 +66,16 @@ class Client:
 class SQSClient(Client):
 
     def __init__(self):
+        super().__init__()
         # Create SQS client
         self.sqs = boto3.client('sqs')
 
     @classmethod
     def extract(cls, queue_url):
-        return cls.instance().sqs_retrieve(queue_url)
+        return cls.instance().sqs_retrieve(queue_url)[0]
 
     def sqs_retrieve(self, queue_url):
-        response = sqs.receive_message(
+        response = self.sqs.receive_message(
             QueueUrl=queue_url,
             AttributeNames=[
                 'SentTimestamp', 'MessageDeduplicationId'
@@ -87,7 +89,7 @@ class SQSClient(Client):
         )
 
         receivedMessageIds = []
-        recievedMessages = []
+        receivedMessages = []
 
         # Loop over messages
         for message in response['Messages']:
@@ -95,18 +97,18 @@ class SQSClient(Client):
             # any information required to deduplicate the message should be
             # present in the message body
             messageBody = message['Body']
-            receivedMessages = json.loads(messageBody)
+            receivedMessages.append(json.loads(messageBody))
             # verify message body integrity
-            messageBodyMd5 = hashlib.md5(messageBody).digest()
+            messageBodyMd5 = hashlib.md5(messageBody.encode()).hexdigest()
 
             if messageBodyMd5 == message['MD5OfBody'] :
                 # the message has been retrived successfully - delete it.
                 self.sqs_delete(queue_url, message['ReceiptHandle'])
 
-        return messages
+        return receivedMessages, receivedMessageIds
 
     def sqs_delete(self, queue_url, receipt_handle):
-        sqs.delete_message(
+        self.sqs.delete_message(
             QueueUrl=queue_url,
             ReceiptHandle=receipt_handle
         )

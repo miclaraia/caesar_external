@@ -7,6 +7,8 @@ Storage module to track which classification was gotten last
 import os
 import json
 
+import logging
+logger = logging.getLogger(__name__)
 
 class Config:
     _config = None
@@ -19,6 +21,8 @@ class Config:
 
         self.caesar_name = kwargs.get('caesar_name', 'ext')
         self.sqs_queue = kwargs.get('sqs_queue', None)
+
+        logger.debug('Initializing config singleton: {}'.format(self.__dict__))
 
         self.__class__._config = self
 

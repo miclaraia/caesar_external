@@ -29,9 +29,10 @@ class Extractor(object):
             cls.last_id(cl['id'])
 
     @classmethod
-    def get_classifications(cls, last_id):
+    def get_classifications(cls, last_id=None):
+        logger.debug('Getting classifications\n{}\n{}'.format(last_id, Config.instance().sqs_queue))
         if Config.instance().sqs_queue is not None:
-            return SQSExtractor.get_classifications(last_id)
+            return SQSExtractor.get_classifications(Config.instance().sqs_queue)
         else :
             return StandardExtractor.get_classifications(last_id)
 
@@ -40,7 +41,7 @@ class StandardExtractor(Extractor):
 
     @classmethod
     def get_classifications(cls, last_id):
-        logger.debug('Getting classifications')
+        logger.debug('Getting classifications from Panoptes')
         project = Config.instance().project
         for c in Client.extract(project, last_id):
             cl = {
@@ -66,7 +67,7 @@ class StandardExtractor(Extractor):
 class SQSExtractor(Extractor):
 
     @classmethod
-    def get_classifications(cls, last_id):
+    def get_classifications(cls, queue_url):
         # TODO: is there any way to use last_id?
         logger.debug('Getting classifications from SQS')
         project = Config.instance().project
@@ -75,14 +76,9 @@ class SQSExtractor(Extractor):
                 'id': int(c['id']),
                 'subject': int(c['subject_id']),
                 'project': int(c['project_id']),
-                'workflow': int(c['workflow_id']),
+                'workflow': None,  # The extraction code removes workflow id
                 'annotations': c['annotations'],
                 'user': c['user']  # Assumes that extractor will handle user ID
             }
-
-            # this should never happen unless multiple workflows share the same
-            # queue
-            if cl['workflow'] != Config.instance().workflow:
-                continue
 
             yield cl
