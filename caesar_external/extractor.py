@@ -75,10 +75,10 @@ class SQSExtractor(Extractor):
             cl = {
                 'id': int(c['id']),
                 'subject': int(c['subject_id']),
-                'project': int(c['project_id']),
-                'workflow': None,  # The extraction code removes workflow id
-                'annotations': c['annotations'],
-                'user': c['user']  # Assumes that extractor will handle user ID
+                'project': int(c['data']['classification']['project_id']),
+                'workflow': c['data']['classification']['workflow_id'],
+                'annotations': c['data']['classification']['annotations'],
+                'user': c['data']['classification']['user_id']  # Assumes that extractor will handle user ID
             }
 
             yield cl

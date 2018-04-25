@@ -21,6 +21,7 @@ class Config:
 
         self.caesar_name = kwargs.get('caesar_name', 'ext')
         self.sqs_queue = kwargs.get('sqs_queue', None)
+        self.staging_mode = int(kwargs.get('staging_mode', 0))
 
         logger.debug('Initializing config singleton: {}'.format(self.__dict__))
 
@@ -28,7 +29,7 @@ class Config:
 
     @staticmethod
     def _keys():
-        return ['name', 'project', 'workflow', 'last_id', 'caesar_name', 'sqs_queue']
+        return ['name', 'project', 'workflow', 'last_id', 'caesar_name', 'sqs_queue', 'staging_mode']
 
     @classmethod
     def instance(cls):
@@ -36,10 +37,15 @@ class Config:
 
     @staticmethod
     def caesar_endpoint():
-        return 'https://caesar.zooniverse.org:443'
+        return 'https://caesar-staging.zooniverse.org' if Config._config.staging_mode else 'https://caesar.zooniverse.org'
+
+    @staticmethod
+    def login_endpoint():
+        return 'https://panoptes-staging.zooniverse.org' if Config._config.staging_mode else 'https://zooniverse.org'
+
 
     def workflow_path(self):
-        return 'workflows/%d/reducers/%s/reductions' % \
+        return 'workflows/%d/subject_reductions/%s/reductions' % \
             (self.workflow, self.caesar_name)
 
     def save(self):

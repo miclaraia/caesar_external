@@ -1,5 +1,6 @@
 
 import panoptes_client as pan
+from panoptes_client.panoptes import PanoptesAPIException
 from caesar_external.data import Config
 
 import hashlib
@@ -19,7 +20,7 @@ class Client:
     _instance = None
 
     def __init__(self):
-        self.pan = pan.Panoptes(login='interactive')
+        self.pan = pan.Panoptes(login='interactive', endpoint=Config._config.login_endpoint())
 
     @classmethod
     def instance(cls):
@@ -58,12 +59,30 @@ class Client:
             }
         }
 
-        r = pan.put(endpoint=endpoint, path=path, json=body)
+        try :
+            logger.debug('endpoint => {}, path => {}'.format(endpoint,path))
+            r = pan.put(endpoint=endpoint, path=path, json=body)
+            return r
+        except PanoptesAPIException as e:
+            print('Failed to send reduction for {}: {}'.format(subject, e))
+        except json.decoder.JSONDecodeError as e :
+            print('Error decoding JSON - Likely issue with endpoint')
 
-        return r
+        return None
 
 
 class SQSClient(Client):
+
+    class UniqueMessage(object):
+
+        def __init__(self, message):
+            self.classification_id = int(message['classification_id'])
+
+        def __eq__(self, other):
+            return self.classification_id == other(self.classification_id)
+
+        def __hash__(self):
+            return hash(self.classification_id)
 
     def __init__(self):
         super().__init__()
@@ -84,28 +103,35 @@ class SQSClient(Client):
             MessageAttributeNames=[
                 'All'
             ],
-            VisibilityTimeout=0,  # Allows the message to be retrieved again immediately
+            VisibilityTimeout=20,  # Allows the message to be retrieved again after 20s
             WaitTimeSeconds=5  # Wait at most 5 seconds for an extract
         )
 
         receivedMessageIds = []
         receivedMessages = []
+        uniqueMessages = set()
 
         # Loop over messages
-        for message in response['Messages']:
-            # extract message body expect a JSON formatted string
-            # any information required to deduplicate the message should be
-            # present in the message body
-            messageBody = message['Body']
-            receivedMessages.append(json.loads(messageBody))
-            # verify message body integrity
-            messageBodyMd5 = hashlib.md5(messageBody.encode()).hexdigest()
+        if 'Messages' in response :
+            for message in response['Messages']:
+                # extract message body expect a JSON formatted string
+                # any information required to deduplicate the message should be
+                # present in the message body
+                messageBody = message['Body']
+                # verify message body integrity
+                messageBodyMd5 = hashlib.md5(messageBody.encode()).hexdigest()
 
-            if messageBodyMd5 == message['MD5OfBody'] :
-                # the message has been retrived successfully - delete it.
-                self.sqs_delete(queue_url, message['ReceiptHandle'])
+                if messageBodyMd5 == message['MD5OfBody'] :
+                    receivedMessages.append(json.loads(messageBody))
+                    receivedMessageIds.append(receivedMessages[-1]['classification_id'])
+                    uniqueMessages.insert(UniqueMessage(messageBody))
+                    # the message has been retrieved successfully - delete it.
+                    self.sqs_delete(queue_url, message['ReceiptHandle'])
 
-        return receivedMessages, receivedMessageIds
+
+        logger.debug('Num Duplicated IDS: {}'.format(len(receivedMessages) - len(uniqueMessages)))
+
+        return list(uniqueMessages), receivedMessages, receivedMessageIds
 
     def sqs_delete(self, queue_url, receipt_handle):
         self.sqs.delete_message(
