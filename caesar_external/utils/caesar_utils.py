@@ -103,8 +103,8 @@ class SQSClient(Client):
             MessageAttributeNames=[
                 'All'
             ],
-            VisibilityTimeout=20,  # Allows the message to be retrieved again after 20s
-            WaitTimeSeconds=5  # Wait at most 5 seconds for an extract
+            VisibilityTimeout=40,  # Allows the message to be retrieved again after 40s
+            WaitTimeSeconds=30  # Wait at most 30 seconds for an extract enables long polling
         )
 
         receivedMessageIds = []
