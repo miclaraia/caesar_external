@@ -20,6 +20,7 @@ class Client:
     _instance = None
 
     def __init__(self):
+        logger.info('Authenticating with Caesar...')
         self.pan = pan.Panoptes(login='interactive', endpoint=Config._config.login_endpoint())
 
     @classmethod
@@ -70,19 +71,20 @@ class Client:
 
         return None
 
+class UniqueMessage(object):
+
+    def __init__(self, message):
+        logger.debug(message)
+        self.classification_id = int(message['classification_id'])
+        self.message = message
+
+    def __eq__(self, other):
+        return self.classification_id == other(self.classification_id)
+
+    def __hash__(self):
+        return hash(self.classification_id)
 
 class SQSClient(Client):
-
-    class UniqueMessage(object):
-
-        def __init__(self, message):
-            self.classification_id = int(message['classification_id'])
-
-        def __eq__(self, other):
-            return self.classification_id == other(self.classification_id)
-
-        def __hash__(self):
-            return hash(self.classification_id)
 
     def __init__(self):
         super().__init__()
@@ -104,7 +106,7 @@ class SQSClient(Client):
                 'All'
             ],
             VisibilityTimeout=40,  # Allows the message to be retrieved again after 40s
-            WaitTimeSeconds=30  # Wait at most 30 seconds for an extract enables long polling
+            WaitTimeSeconds=20  # Wait at most 20 seconds for an extract enables long polling
         )
 
         receivedMessageIds = []
@@ -124,14 +126,14 @@ class SQSClient(Client):
                 if messageBodyMd5 == message['MD5OfBody'] :
                     receivedMessages.append(json.loads(messageBody))
                     receivedMessageIds.append(receivedMessages[-1]['classification_id'])
-                    uniqueMessages.insert(UniqueMessage(messageBody))
+                    uniqueMessages.add(UniqueMessage(receivedMessages[-1]))
                     # the message has been retrieved successfully - delete it.
                     self.sqs_delete(queue_url, message['ReceiptHandle'])
 
 
         logger.debug('Num Duplicated IDS: {}'.format(len(receivedMessages) - len(uniqueMessages)))
 
-        return list(uniqueMessages), receivedMessages, receivedMessageIds
+        return [uniqueMessage.message for uniqueMessage in uniqueMessages], receivedMessages, receivedMessageIds
 
     def sqs_delete(self, queue_url, receipt_handle):
         self.sqs.delete_message(
