@@ -22,6 +22,8 @@ class Config:
         self.caesar_name = kwargs.get('caesar_name', 'ext')
         self.sqs_queue = kwargs.get('sqs_queue', None)
         self.staging_mode = int(kwargs.get('staging_mode', 0))
+        self.client_id = kwargs.get('client_id', None)
+        self.client_secret = kwargs.get('client_secret', None)
 
         logger.debug('Initializing config singleton: {}'.format(self.__dict__))
 
@@ -41,8 +43,19 @@ class Config:
 
     @staticmethod
     def login_endpoint():
-        return 'https://panoptes-staging.zooniverse.org' if Config._config.staging_mode else 'https://zooniverse.org'
+        return 'https://panoptes-staging.zooniverse.org' if Config._config.staging_mode else 'https://panoptes.zooniverse.org'
 
+    @staticmethod
+    def oauth_redirect_url():
+        return 'https://caesar-staging.zooniverse.org/auth/zooniverse/callback' if Config._config.staging_mode else 'https://caesar.zooniverse.org/auth/zooniverse/callback'
+
+    @staticmethod
+    def client_id():
+        return Config._config.client_id
+
+    @staticmethod
+    def client_secret():
+        return Config._config.client_secret
 
     def workflow_path(self):
         return 'workflows/%d/subject_reductions/%s/reductions' % \

@@ -21,7 +21,9 @@ class Client:
 
     def __init__(self):
         logger.info('Authenticating with Caesar...')
-        self.pan = pan.Panoptes(login='interactive', endpoint=Config._config.login_endpoint())
+        # self.pan = pan.Panoptes(login='interactive', endpoint=Config._config.login_endpoint())
+        self.pan = pan.Panoptes.connect(client_secret=Config.client_secret(), client_id=Config.client_id(), redirect_url=Config.oauth_redirect_url(), endpoint=Config.login_endpoint())
+        print('Panoptes Connection => {}'.format(self.pan))
 
     @classmethod
     def instance(cls):
