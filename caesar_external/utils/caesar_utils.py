@@ -21,9 +21,27 @@ class Client:
 
     def __init__(self):
         logger.info('Authenticating with Caesar...')
-        # self.pan = pan.Panoptes(login='interactive', endpoint=Config._config.login_endpoint())
-        self.pan = pan.Panoptes.connect(client_secret=Config.client_secret(), client_id=Config.client_id(), redirect_url=Config.oauth_redirect_url(), endpoint=Config.login_endpoint())
-        print('Panoptes Connection => {}'.format(self.pan))
+        config = Config.instance()
+        kwargs = {
+            'endpoint': config.login_endpoint(),
+        }
+
+        if config.auth_mode == 'api_key':
+            kwargs.update({
+                'client_id': config.client_id,
+                'client_secret': config.client_secret,
+            })
+        elif config.auth_mode == 'interactive':
+            kwargs.update({
+                'login': 'interactive',
+            })
+        elif config.auth_mode == 'environment':
+            # panoptes client will handle getting environment variables
+            # for authentication.
+            # keeping this here for clarity
+            pass
+
+        self.pan = pan.Panoptes(**kwargs)
 
     @classmethod
     def instance(cls):

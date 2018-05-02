@@ -2,6 +2,7 @@
 
 import click
 import code
+import os
 from caesar_external.ui import ui
 from caesar_external.data import Config
 from caesar_external.extractor import Extractor
@@ -22,22 +23,31 @@ def config():
 @click.argument('project', type=int)
 @click.argument('workflow', type=int)
 @click.option('--last_id', type=int)
-@click.option('--caesar_name')
+@click.option('--caesar_name',
+              help='Name used for swap as a reducer in caesar\'s configuration'
+                   ', see https://zooniverse.github.io/caesar/#introduction '
+                   'about setting up a reducer in caesar.')
 @click.option('--sqs_queue')
-@click.option('--staging_mode')
-@click.option('--client_id')
-@click.option('--client_secret')
-def new(name, project, workflow, last_id, caesar_name, sqs_queue=None, staging_mode=False, client_id=None, client_secret=None):
+@click.option('--staging', is_flag=True)
+@click.option('--auth_mode', prompt='interactive,environment,api_key')
+def new(name, project, workflow, last_id, caesar_name, sqs_queue,
+        staging, auth_mode):
+
     kwargs = {
         'name': name,
         'project': project,
         'workflow': workflow,
         'last_id': last_id,
         'sqs_queue' : sqs_queue,
-        'staging_mode' : staging_mode,
-        'client_id' : client_id,
-        'client_secret' : client_secret
+        'staging_mode' : staging,
     }
+
+    if auth_mode == 'api_key':
+        kwargs.update({
+            'client_id': os.environ.get('PANOPTES_CLIENT_ID'),
+            'client_secret': os.environ.get('PANOPTES_CLIENT_SECRET')
+        })
+
     if caesar_name is not None:
         kwargs.update({'caesar_name': caesar_name})
 
