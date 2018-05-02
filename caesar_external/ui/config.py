@@ -22,16 +22,35 @@ def config():
 @click.argument('name')
 @click.argument('project', type=int)
 @click.argument('workflow', type=int)
-@click.option('--last_id', type=int)
+@click.option('--last_id', type=int,
+              help='Exclude classifications before this classification id.')
 @click.option('--caesar_name',
               help='Name used for swap as a reducer in caesar\'s configuration'
                    ', see https://zooniverse.github.io/caesar/#introduction '
                    'about setting up a reducer in caesar.')
-@click.option('--sqs_queue')
-@click.option('--staging', is_flag=True)
-@click.option('--auth_mode', prompt='interactive,environment,api_key')
+@click.option('--sqs_queue',
+              help='Specify whether caesar should subscribe to an SQS '
+                   'queue for classifications. If left blank will default '
+                   'to panoptes api as classification source.')
+@click.option('--staging', is_flag=True,
+              help='Flag to use staging endpoints for panoptes and caesar')
+@click.option('--auth_mode',
+              help='interactive,environment,api_key\n'
+                   'If api_key is selected, make sure client id and client '
+                   'secret are stored in environment variables in '
+                   'PANOPTES_CLIENT_ID and PANOPTES_CLIENT_SECRET')
 def new(name, project, workflow, last_id, caesar_name, sqs_queue,
         staging, auth_mode):
+    """
+    Generate new configuration for a project.
+
+    \b
+    Arguments
+    ---------
+    name - Arbitrary name used to store configuration
+    project - Zooniverse project id
+    workflow - Zooniverse workflow id
+    """
 
     kwargs = {
         'name': name,
