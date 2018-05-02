@@ -128,4 +128,4 @@ _vimrc_local.vim
 # SWAP specific stuff
 logs/
 conf/
-data/CAESARTESTS.json
+*.json

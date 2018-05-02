@@ -31,7 +31,7 @@ class Config:
 
     @staticmethod
     def _keys():
-        return ['name', 'project', 'workflow', 'last_id', 'caesar_name', 'sqs_queue', 'staging_mode']
+        return ['name', 'project', 'workflow', 'last_id', 'caesar_name', 'sqs_queue', 'staging_mode', 'client_id', 'client_secret']
 
     @classmethod
     def instance(cls):

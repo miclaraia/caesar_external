@@ -25,14 +25,18 @@ def config():
 @click.option('--caesar_name')
 @click.option('--sqs_queue')
 @click.option('--staging_mode')
-def new(name, project, workflow, last_id, caesar_name, sqs_queue=None, staging_mode=False):
+@click.option('--client_id')
+@click.option('--client_secret')
+def new(name, project, workflow, last_id, caesar_name, sqs_queue=None, staging_mode=False, client_id=None, client_secret=None):
     kwargs = {
         'name': name,
         'project': project,
         'workflow': workflow,
         'last_id': last_id,
         'sqs_queue' : sqs_queue,
-        'staging_mode' : staging_mode
+        'staging_mode' : staging_mode,
+        'client_id' : client_id,
+        'client_secret' : client_secret
     }
     if caesar_name is not None:
         kwargs.update({'caesar_name': caesar_name})
