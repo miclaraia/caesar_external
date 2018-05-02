@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 """
-Utils to interact with caesar...
+Utils to interact with Zooniverse...
 """
 
 
@@ -62,13 +62,13 @@ class Client:
             }
         }
 
-        try :
-            logger.debug('endpoint => {}, path => {}'.format(endpoint,path))
+        try:
+            logger.debug('endpoint => {}, path => {}'.format(endpoint, path))
             r = pan.put(endpoint=endpoint, path=path, json=body)
             return r
         except PanoptesAPIException as e:
             print('Failed to send reduction for {}: {}'.format(subject, e))
-        except json.decoder.JSONDecodeError as e :
+        except json.decoder.JSONDecodeError as e:
             print('Error decoding JSON - Likely issue with endpoint')
 
         return None
@@ -107,8 +107,10 @@ class SQSClient(Client):
             MessageAttributeNames=[
                 'All'
             ],
-            VisibilityTimeout=40,  # Allows the message to be retrieved again after 40s
-            WaitTimeSeconds=20  # Wait at most 20 seconds for an extract enables long polling
+            # Allows the message to be retrieved again after 40s
+            VisibilityTimeout=40,
+            # Wait at most 20 seconds for an extract enables long polling
+            WaitTimeSeconds=20
         )
 
         receivedMessageIds = []
@@ -116,7 +118,7 @@ class SQSClient(Client):
         uniqueMessages = set()
 
         # Loop over messages
-        if 'Messages' in response :
+        if 'Messages' in response:
             for message in response['Messages']:
                 # extract message body expect a JSON formatted string
                 # any information required to deduplicate the message should be
@@ -125,17 +127,20 @@ class SQSClient(Client):
                 # verify message body integrity
                 messageBodyMd5 = hashlib.md5(messageBody.encode()).hexdigest()
 
-                if messageBodyMd5 == message['MD5OfBody'] :
+                if messageBodyMd5 == message['MD5OfBody']:
                     receivedMessages.append(json.loads(messageBody))
-                    receivedMessageIds.append(receivedMessages[-1]['classification_id'])
+                    receivedMessageIds.append(
+                        receivedMessages[-1]['classification_id'])
                     uniqueMessages.add(UniqueMessage(receivedMessages[-1]))
                     # the message has been retrieved successfully - delete it.
                     self.sqs_delete(queue_url, message['ReceiptHandle'])
 
 
-        logger.debug('Num Duplicated IDS: {}'.format(len(receivedMessages) - len(uniqueMessages)))
+        logger.debug('Num Duplicated IDS: {}'.format(
+            len(receivedMessages) - len(uniqueMessages)))
 
-        return [uniqueMessage.message for uniqueMessage in uniqueMessages], receivedMessages, receivedMessageIds
+        messages = [m.message for m in uniqueMessages]
+        return messages, receivedMessages, receivedMessageIds
 
     def sqs_delete(self, queue_url, receipt_handle):
         self.sqs.delete_message(

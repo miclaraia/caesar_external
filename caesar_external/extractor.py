@@ -6,13 +6,12 @@ Get classifications from Panoptes or SQS Queue
 
 from caesar_external.utils.caesar_utils import Client, SQSClient
 from caesar_external.data import Config
-import panoptes_client as pan
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class Extractor(object):
+class Extractor:
 
     @classmethod
     def last_id(cls, next_id=None):
@@ -30,11 +29,11 @@ class Extractor(object):
 
     @classmethod
     def get_classifications(cls, last_id=None):
-        logger.debug('Getting classifications\n{}\n{}'.format(last_id, Config.instance().sqs_queue))
+        logger.debug('Getting classifications\n{}\n{}'.format(
+            last_id, Config.instance().sqs_queue))
         if Config.instance().sqs_queue is not None:
             return SQSExtractor.get_classifications(Config.instance().sqs_queue)
-        else :
-            return StandardExtractor.get_classifications(last_id)
+        return StandardExtractor.get_classifications(last_id)
 
 
 class StandardExtractor(Extractor):
@@ -70,7 +69,6 @@ class SQSExtractor(Extractor):
     def get_classifications(cls, queue_url):
         # TODO: is there any way to use last_id?
         logger.debug('Getting classifications from SQS')
-        project = Config.instance().project
         for c in SQSClient.extract(queue_url):
             cl = {
                 'id': int(c['id']),
@@ -78,7 +76,8 @@ class SQSExtractor(Extractor):
                 'project': int(c['data']['classification']['project_id']),
                 'workflow': c['data']['classification']['workflow_id'],
                 'annotations': c['data']['classification']['annotations'],
-                'user': c['data']['classification']['user_id']  # Assumes that extractor will handle user ID
+                # Assumes that extractor will handle user ID
+                'user': c['data']['classification']['user_id']
             }
 
             yield cl

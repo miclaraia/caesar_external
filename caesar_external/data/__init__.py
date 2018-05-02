@@ -10,6 +10,7 @@ import json
 import logging
 logger = logging.getLogger(__name__)
 
+
 class Config:
     _config = None
 
@@ -87,7 +88,6 @@ class Config:
 
     def __repr__(self):
         return str(self)
-
 
 def dir():
     return os.path.abspath(os.path.dirname(__file__))
